@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain;
-public interface ICustomer<TAdress, TCompany, TGeo>
+﻿namespace Domain;
+public interface IUser<TAdress, TCompany, TGeo>
     where TAdress : class, IAddress<TGeo>
     where TCompany : class, ICompany
     where TGeo : class, IGeo
