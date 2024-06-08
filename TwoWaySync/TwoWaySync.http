@@ -1,0 +1,6 @@
+@TwoWaySync_HostAddress = http://localhost:5119
+
+GET {{TwoWaySync_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
