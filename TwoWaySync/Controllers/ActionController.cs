@@ -18,9 +18,9 @@ public class ActionController : ControllerBase
 
     [HttpGet]
     [Route("Get/{id}")]
-    public async Task<ActionResult<UserEntity>> GetAsnyc([FromRoute] int id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<UserEntity>> GetByIdAsnyc([FromRoute] int id, CancellationToken cancellationToken = default)
     {
-        var result = await _usersRepo.GetAsync(id, cancellationToken);
+        var result = await _usersRepo.GetByIdAsync(id, cancellationToken);
         if (result == null)
             return NotFound();
         return result;

@@ -20,7 +20,7 @@ public class UsersRepo
         _dataContext = dataContext;
     }
 
-    public async Task<UserEntity?> GetAsync(int id, CancellationToken cancellationToken = default) =>
+    public async Task<UserEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         await _dataContext.Users
             .Include(u => u.Adress.Geo)
             .Include(u => u.Company)
