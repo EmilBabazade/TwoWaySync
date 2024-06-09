@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
 
+// TODO: unit tests
+
 namespace Services.UsersApi;
 public class UserApiHttpClient
 {

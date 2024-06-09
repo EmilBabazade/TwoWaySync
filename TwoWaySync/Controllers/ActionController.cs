@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Data.Entities;
+using Data.Repos;
+using Microsoft.AspNetCore.Mvc;
 using Services.UsersApi;
 using Services.UsersApi.Model;
 
@@ -7,17 +9,20 @@ namespace TwoWaySync.Controllers;
 [ApiController]
 public class ActionController : ControllerBase
 {
-    private readonly UserApiHttpClient _userApiHttpClient;
+    private readonly UsersRepo _usersRepo;
 
-    public ActionController(UserApiHttpClient userApiHttpClient)
+    public ActionController(UsersRepo usersRepo)
     {
-        _userApiHttpClient = userApiHttpClient;
+        _usersRepo = usersRepo;
     }
 
     [HttpGet]
-    [Route("GetAllUsersFromApi")]
-    public async Task<IEnumerable<User>?> GetAllUsersFromApi(CancellationToken cancellationToken = default)
+    [Route("Get/{id}")]
+    public async Task<ActionResult<UserEntity>> GetAsnyc([FromRoute] int id, CancellationToken cancellationToken = default)
     {
-        return await _userApiHttpClient.GetUsers(cancellationToken);
+        var result = await _usersRepo.GetAsync(id, cancellationToken);
+        if (result == null)
+            return NotFound();
+        return result;
     }
 }

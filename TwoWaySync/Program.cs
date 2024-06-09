@@ -1,3 +1,7 @@
+using Data;
+using Data.Repos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Services.UsersApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +13,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<UserApiHttpClient>();
+// TODO: dbcontext options here instead of in DataContext.cs
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseSqlite("Data Source = Database.db"));
+// TODO: interface
+builder.Services.AddScoped<UsersRepo>();
 
 var app = builder.Build();
 
