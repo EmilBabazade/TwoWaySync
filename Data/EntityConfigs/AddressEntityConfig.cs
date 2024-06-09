@@ -9,7 +9,7 @@ internal static class AddressEntityConfig
         modelBuilder.Entity<AddressEntity>()
             .HasOne(a => a.Geo)
             .WithOne()
-            .HasForeignKey(nameof(GeoEntity), nameof(GeoEntity.AddressRowId))
+            .HasForeignKey(nameof(AddressEntity), nameof(AddressEntity.GeoRowId))
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

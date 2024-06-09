@@ -22,7 +22,13 @@ public class UsersRepo
 
     public async Task<UserEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         await _dataContext.Users
-            .Include(u => u.Adress.Geo)
+            .Include(u => u.Address.Geo)
             .Include(u => u.Company)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+    public async Task<ICollection<UserEntity>> GetAllAsync(CancellationToken cancellation = default) =>
+        await _dataContext.Users
+            .Include(u => u.Address.Geo)
+            .Include(u => u.Company)
+            .ToListAsync(cancellation);
 }

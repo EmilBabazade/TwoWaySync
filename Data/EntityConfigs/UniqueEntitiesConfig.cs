@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.EntityConfigs;
-internal static class UniqueEntityConfig
+internal static class UniqueEntitiesConfig
 {
     internal static void ConfigureIUniqueEntities(this ModelBuilder modelBuilder)
     {

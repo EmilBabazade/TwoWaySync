@@ -25,4 +25,9 @@ public class ActionController : ControllerBase
             return NotFound();
         return result;
     }
+
+    [HttpGet]
+    [Route("GetAll")]
+    public async Task<ICollection<UserEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        await _usersRepo.GetAllAsync(cancellationToken);
 }

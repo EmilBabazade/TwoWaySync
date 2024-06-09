@@ -11,5 +11,4 @@ public class GeoEntity : IGeo, IUnique
     public int RowId { get; set; }
     public string Lat { get; set; }
     public string Lng { get; set; }
-    public int AddressRowId { get; set; }
 }

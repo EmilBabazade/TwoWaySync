@@ -15,6 +15,8 @@ public class UserEntity : IUnique, IUser<AddressEntity, CompanyEntity, GeoEntity
     public string Email { get; set; }
     public string Phone { get; set; }
     public string Website { get; set; }
-    public AddressEntity Adress { get; set; }
+    public AddressEntity Address { get; set; }
+    public int AddressRowId { get; set; }
     public CompanyEntity Company { get; set; }
+    public int CompanyRowId { get; set; }
 }

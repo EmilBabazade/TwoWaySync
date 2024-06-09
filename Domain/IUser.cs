@@ -10,6 +10,6 @@ public interface IUser<TAdress, TCompany, TGeo>
     public string Email { get; set; }
     public string Phone { get; set; }
     public string Website { get; set; }
-    public TAdress Adress { get; set; }
+    public TAdress Address { get; set; }
     public TCompany Company { get; set; }
 }

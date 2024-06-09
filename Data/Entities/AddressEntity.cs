@@ -14,5 +14,5 @@ public class AddressEntity : IAddress<GeoEntity>, IUnique
     public string City { get; set; }
     public string ZipCode { get; set; }
     public GeoEntity Geo { get; set; }
-    public int UserRowId { get; set; }
+    public int GeoRowId { get; set; }
 }

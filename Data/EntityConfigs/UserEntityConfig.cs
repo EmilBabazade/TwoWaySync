@@ -12,15 +12,15 @@ internal static class UserEntityConfig
     internal static void ConfigureUserEntity(this ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserEntity>()
-            .HasOne(u => u.Adress)
+            .HasOne(u => u.Address)
             .WithOne()
-            .HasForeignKey(nameof(AddressEntity), nameof(AddressEntity.UserRowId))
+            .HasForeignKey(nameof(UserEntity), nameof(UserEntity.AddressRowId))
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserEntity>()
             .HasOne(u => u.Company)
             .WithOne()
-            .HasForeignKey(nameof(CompanyEntity), nameof(CompanyEntity.UserRowId))
+            .HasForeignKey(nameof(UserEntity), nameof(UserEntity.CompanyRowId))
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

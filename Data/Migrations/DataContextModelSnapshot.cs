@@ -26,6 +26,9 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("GeoRowId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Street")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -34,16 +37,13 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("UserRowId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("ZipCode")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("RowId");
 
-                    b.HasIndex("UserRowId")
+                    b.HasIndex("GeoRowId")
                         .IsUnique();
 
                     b.ToTable("Addresses");
@@ -67,13 +67,7 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("UserRowId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("RowId");
-
-                    b.HasIndex("UserRowId")
-                        .IsUnique();
 
                     b.ToTable("Companies");
                 });
@@ -82,9 +76,6 @@ namespace Data.Migrations
                 {
                     b.Property<int>("RowId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("AddressRowId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Lat")
@@ -97,9 +88,6 @@ namespace Data.Migrations
 
                     b.HasKey("RowId");
 
-                    b.HasIndex("AddressRowId")
-                        .IsUnique();
-
                     b.ToTable("Geos");
                 });
 
@@ -107,6 +95,12 @@ namespace Data.Migrations
                 {
                     b.Property<int>("RowId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AddressRowId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompanyRowId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Email")
@@ -134,49 +128,43 @@ namespace Data.Migrations
 
                     b.HasKey("RowId");
 
+                    b.HasIndex("AddressRowId")
+                        .IsUnique();
+
+                    b.HasIndex("CompanyRowId")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Data.Entities.AddressEntity", b =>
                 {
-                    b.HasOne("Data.Entities.UserEntity", null)
-                        .WithOne("Adress")
-                        .HasForeignKey("Data.Entities.AddressEntity", "UserRowId")
+                    b.HasOne("Data.Entities.GeoEntity", "Geo")
+                        .WithOne()
+                        .HasForeignKey("Data.Entities.AddressEntity", "GeoRowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("Data.Entities.CompanyEntity", b =>
-                {
-                    b.HasOne("Data.Entities.UserEntity", null)
-                        .WithOne("Company")
-                        .HasForeignKey("Data.Entities.CompanyEntity", "UserRowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Data.Entities.GeoEntity", b =>
-                {
-                    b.HasOne("Data.Entities.AddressEntity", null)
-                        .WithOne("Geo")
-                        .HasForeignKey("Data.Entities.GeoEntity", "AddressRowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Data.Entities.AddressEntity", b =>
-                {
-                    b.Navigation("Geo")
-                        .IsRequired();
+                    b.Navigation("Geo");
                 });
 
             modelBuilder.Entity("Data.Entities.UserEntity", b =>
                 {
-                    b.Navigation("Adress")
+                    b.HasOne("Data.Entities.AddressEntity", "Address")
+                        .WithOne()
+                        .HasForeignKey("Data.Entities.UserEntity", "AddressRowId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company")
+                    b.HasOne("Data.Entities.CompanyEntity", "Company")
+                        .WithOne()
+                        .HasForeignKey("Data.Entities.UserEntity", "CompanyRowId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Company");
                 });
 #pragma warning restore 612, 618
         }
