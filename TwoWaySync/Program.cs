@@ -3,6 +3,7 @@ using Data.MappingProfiles;
 using Data.Repos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Services.DataSync;
 using Services.UsersApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite("Data Source = Database.db"));
 // TODO: interface
 builder.Services.AddScoped<UsersRepo>();
+builder.Services.AddScoped<DataSyncService>();
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<UserMappingProfile>();

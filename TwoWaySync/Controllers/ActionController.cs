@@ -1,6 +1,7 @@
 ﻿using Data.Repos;
 using Domain.User;
 using Microsoft.AspNetCore.Mvc;
+using Services.DataSync;
 using Services.UsersApi;
 
 namespace TwoWaySync.Controllers;
@@ -10,11 +11,13 @@ public class ActionController : ControllerBase
 {
     private readonly UsersRepo _usersRepo;
     private readonly UserApiHttpClient _userApiHttpClient;
+    private readonly DataSyncService _dataSyncService;
 
-    public ActionController(UsersRepo usersRepo, UserApiHttpClient userApiHttpClient)
+    public ActionController(UsersRepo usersRepo, UserApiHttpClient userApiHttpClient, DataSyncService dataSyncService)
     {
         _usersRepo = usersRepo;
         _userApiHttpClient = userApiHttpClient;
+        _dataSyncService = dataSyncService;
     }
 
     // for debugging
@@ -80,4 +83,12 @@ public class ActionController : ControllerBase
     [Route("Upsert")]
     public async Task<User> Upsert([FromBody] User user, CancellationToken cancellationToken = default) =>
         await _usersRepo.UpsertUserAsync(user, cancellationToken);
+
+    [HttpGet]
+    [Route("SynchronizeRemoteToLocal")]
+    public async Task<ActionResult> RemoteToLocal(CancellationToken cancellationToken = default)
+    {
+        await _dataSyncService.RemoteToLocalAsync(cancellationToken);
+        return Ok();
+    }
 }

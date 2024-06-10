@@ -26,7 +26,7 @@ public class UsersRepo
 
     public async Task<ICollection<User>> GetAllAsync(CancellationToken cancellation = default)
     {
-        var users = await _dataContext.Users.ToListAsync(cancellation);
+        var users = await _dataContext.Users.OrderBy(u => u.Id).ToListAsync(cancellation);
         return _mapper.Map<ICollection<User>>(users);
     }
     public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
@@ -67,10 +67,10 @@ public class UsersRepo
     }
     public async Task BulkUpsert(ICollection<User> users, CancellationToken cancellationToken = default)
     {
-        var existingUsers = await _dataContext.Users.Where(ue => !users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
+        var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
         // insert
         var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList(); 
-        _dataContext.AddRange(_mapper.Map<UserEntity>(newUsers));
+        _dataContext.AddRange(_mapper.Map<List<UserEntity>>(newUsers));
         // update
         foreach(var ue in existingUsers)
         {
@@ -80,6 +80,7 @@ public class UsersRepo
     }
     private static void UpdateUserEntity(User user, UserEntity userEntity)
     {
+        if (user == null || userEntity == null) return;
         userEntity.Name = user.Name;
         userEntity.Username = user.Username;
         userEntity.Email = user.Email;
