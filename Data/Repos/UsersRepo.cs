@@ -51,7 +51,9 @@ public class UsersRepo
     public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
     {
         var userEntity = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken) ?? throw new ApplicationException();
-        return await UpdateAsync(user, userEntity, cancellationToken);
+        UpdateUserEntity(user, userEntity);
+        await _dataContext.SaveChangesAsync(cancellationToken);
+        return _mapper.Map<User>(userEntity);
     }
 
     public async Task<User> UpsertUserAsync(User user, CancellationToken cancellationToken = default)
@@ -59,9 +61,24 @@ public class UsersRepo
         var userEntity = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
         if (userEntity == null)
             return await CreateAsync(user, cancellationToken);
-        return await UpdateAsync(user, userEntity, cancellationToken);
+        UpdateUserEntity(user, userEntity);
+        await _dataContext.SaveChangesAsync(cancellationToken);
+        return _mapper.Map<User>(userEntity);
     }
-    private async Task<User> UpdateAsync(User user, UserEntity userEntity, CancellationToken cancellationToken)
+    public async Task BulkUpsert(ICollection<User> users, CancellationToken cancellationToken = default)
+    {
+        var existingUsers = await _dataContext.Users.Where(ue => !users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
+        // insert
+        var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList(); 
+        _dataContext.AddRange(_mapper.Map<UserEntity>(newUsers));
+        // update
+        foreach(var ue in existingUsers)
+        {
+            UpdateUserEntity(users.FirstOrDefault(u => u.Id == ue.Id), ue);
+        }
+        await _dataContext.SaveChangesAsync(cancellationToken);
+    }
+    private static void UpdateUserEntity(User user, UserEntity userEntity)
     {
         userEntity.Name = user.Name;
         userEntity.Username = user.Username;
@@ -77,9 +94,7 @@ public class UsersRepo
         userEntity.CompanyName = user.CompanyName;
         userEntity.CompanyCatchPhrase = user.CompanyCatchPhrase;
         userEntity.CompanyBs = user.CompanyBs;
-        await _dataContext.SaveChangesAsync(cancellationToken);
-
-        return _mapper.Map<User>(userEntity);
     }
+
 
 }
