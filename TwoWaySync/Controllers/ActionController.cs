@@ -20,9 +20,9 @@ public class ActionController : ControllerBase
     // for debugging
     [HttpGet]
     [Route("GetAllFromRemote")]
-    public async Task<ActionResult<ICollection<User>>> GetAllFromRemote()
+    public async Task<ActionResult<ICollection<User>>> GetAllFromRemote(CancellationToken cancellationToken = default)
     {
-        return Ok(await _userApiHttpClient.GetUsers());
+        return Ok(await _userApiHttpClient.GetUsers(cancellationToken));
     }
 
     [HttpGet]
@@ -39,4 +39,18 @@ public class ActionController : ControllerBase
     [Route("GetAll")]
     public async Task<ICollection<User>> GetAllAsync(CancellationToken cancellationToken = default) =>
         await _usersRepo.GetAllAsync(cancellationToken);
+
+    [HttpPost]
+    [Route("Create")]
+    public async Task<ActionResult<User>> CreateUser([FromBody] User user, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _usersRepo.CreateAsync(user, cancellationToken);
+        }
+        catch(ApplicationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

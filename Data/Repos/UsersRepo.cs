@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Data.Entities;
 using Domain.User;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,5 +28,16 @@ public class UsersRepo
     {
         var users = await _dataContext.Users.ToListAsync(cancellation);
         return _mapper.Map<ICollection<User>>(users);
+    }
+    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
+    {
+        if (await _dataContext.Users.AnyAsync(u => u.Id == user.Id, cancellationToken))
+            throw new ApplicationException("User already exists");
+
+        var userEntity = _mapper.Map<UserEntity>(user);
+        _dataContext.Add(userEntity);
+        await _dataContext.SaveChangesAsync(cancellationToken);
+
+        return _mapper.Map<User>(userEntity);
     }
 }
