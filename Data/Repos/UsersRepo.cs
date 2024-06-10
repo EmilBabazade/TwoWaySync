@@ -47,4 +47,39 @@ public class UsersRepo
         _dataContext.RemoveRange(users);
         await _dataContext.SaveChangesAsync();
     }
+
+    public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
+    {
+        var userEntity = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken) ?? throw new ApplicationException();
+        return await UpdateAsync(user, userEntity, cancellationToken);
+    }
+
+    public async Task<User> UpsertUserAsync(User user, CancellationToken cancellationToken = default)
+    {
+        var userEntity = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
+        if (userEntity == null)
+            return await CreateAsync(user, cancellationToken);
+        return await UpdateAsync(user, userEntity, cancellationToken);
+    }
+    private async Task<User> UpdateAsync(User user, UserEntity userEntity, CancellationToken cancellationToken)
+    {
+        userEntity.Name = user.Name;
+        userEntity.Username = user.Username;
+        userEntity.Email = user.Email;
+        userEntity.StreetAddress = user.StreetAddress;
+        userEntity.ApartmentSuite = user.ApartmentSuite;
+        userEntity.City = user.City;
+        userEntity.ZipCode = user.ZipCode;
+        userEntity.Latitude = user.Latitude;
+        userEntity.Longitude = user.Longitude;
+        userEntity.Phone = user.Phone;
+        userEntity.Website = user.Website;
+        userEntity.CompanyName = user.CompanyName;
+        userEntity.CompanyCatchPhrase = user.CompanyCatchPhrase;
+        userEntity.CompanyBs = user.CompanyBs;
+        await _dataContext.SaveChangesAsync(cancellationToken);
+
+        return _mapper.Map<User>(userEntity);
+    }
+
 }

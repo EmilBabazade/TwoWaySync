@@ -61,4 +61,23 @@ public class ActionController : ControllerBase
         await _usersRepo.DeleteUserAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpPatch]
+    [Route("Update")]
+    public async Task<ActionResult<User>> Update([FromBody] User user, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _usersRepo.UpdateUserAsync(user, cancellationToken);
+        }
+        catch(ApplicationException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPut]
+    [Route("Upsert")]
+    public async Task<User> Upsert([FromBody] User user, CancellationToken cancellationToken = default) =>
+        await _usersRepo.UpsertUserAsync(user, cancellationToken);
 }
