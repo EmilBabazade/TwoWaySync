@@ -53,4 +53,12 @@ public class ActionController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpDelete]
+    [Route("Delete/{id}")]
+    public async Task<ActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken = default)
+    {
+        await _usersRepo.DeleteUserAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

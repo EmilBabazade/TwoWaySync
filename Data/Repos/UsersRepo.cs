@@ -40,4 +40,11 @@ public class UsersRepo
 
         return _mapper.Map<User>(userEntity);
     }
+
+    public async Task DeleteUserAsync(int id, CancellationToken cancellation = default)
+    {
+        var users = await _dataContext.Users.Where(u => u.Id == id).ToListAsync(cancellation);
+        _dataContext.RemoveRange(users);
+        await _dataContext.SaveChangesAsync();
+    }
 }
