@@ -1,4 +1,5 @@
 using Data;
+using Data.MappingProfiles;
 using Data.Repos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -13,11 +14,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<UserApiHttpClient>();
-// TODO: dbcontext options here instead of in DataContext.cs
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite("Data Source = Database.db"));
 // TODO: interface
 builder.Services.AddScoped<UsersRepo>();
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<UserMappingProfile>();
+});
 
 var app = builder.Build();
 

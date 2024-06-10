@@ -1,14 +1,13 @@
-﻿using Domain;
+﻿namespace Services.UsersApi.ResponseModel;
 
-namespace Services.UsersApi.Model;
-public class User : IUser<Address, Company, Geo>
+public class ResponseUser
 {
     public int Id { get; set; }
     public string Name { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }
+    public Address Address { get; set; }
     public string Phone { get; set; }
     public string Website { get; set; }
-    public Address Address { get; set; }
     public Company Company { get; set; }
 }

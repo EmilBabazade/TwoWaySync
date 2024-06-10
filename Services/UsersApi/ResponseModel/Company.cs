@@ -1,7 +1,6 @@
-﻿using Domain;
+﻿namespace Services.UsersApi.ResponseModel;
 
-namespace Services.UsersApi.Model;
-public class Company : ICompany
+public class Company
 {
     public string Name { get; set; }
     public string CatchPhrase { get; set; }

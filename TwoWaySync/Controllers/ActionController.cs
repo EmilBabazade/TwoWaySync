@@ -1,8 +1,7 @@
-﻿using Data.Entities;
-using Data.Repos;
+﻿using Data.Repos;
+using Domain.User;
 using Microsoft.AspNetCore.Mvc;
 using Services.UsersApi;
-using Services.UsersApi.Model;
 
 namespace TwoWaySync.Controllers;
 [Route("api/[controller]")]
@@ -10,15 +9,25 @@ namespace TwoWaySync.Controllers;
 public class ActionController : ControllerBase
 {
     private readonly UsersRepo _usersRepo;
+    private readonly UserApiHttpClient _userApiHttpClient;
 
-    public ActionController(UsersRepo usersRepo)
+    public ActionController(UsersRepo usersRepo, UserApiHttpClient userApiHttpClient)
     {
         _usersRepo = usersRepo;
+        _userApiHttpClient = userApiHttpClient;
+    }
+
+    // for debugging
+    [HttpGet]
+    [Route("GetAllFromRemote")]
+    public async Task<ActionResult<ICollection<User>>> GetAllFromRemote()
+    {
+        return Ok(await _userApiHttpClient.GetUsers());
     }
 
     [HttpGet]
     [Route("Get/{id}")]
-    public async Task<ActionResult<UserEntity>> GetByIdAsnyc([FromRoute] int id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<User>> GetByIdAsnyc([FromRoute] int id, CancellationToken cancellationToken = default)
     {
         var result = await _usersRepo.GetByIdAsync(id, cancellationToken);
         if (result == null)
@@ -28,6 +37,6 @@ public class ActionController : ControllerBase
 
     [HttpGet]
     [Route("GetAll")]
-    public async Task<ICollection<UserEntity>> GetAllAsync(CancellationToken cancellationToken = default) =>
+    public async Task<ICollection<User>> GetAllAsync(CancellationToken cancellationToken = default) =>
         await _usersRepo.GetAllAsync(cancellationToken);
 }

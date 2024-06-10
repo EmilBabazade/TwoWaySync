@@ -10,14 +10,9 @@ public class DataContext : DbContext
         
     }
     public virtual DbSet<UserEntity> Users { get; set; }
-    public virtual DbSet<GeoEntity> Geos { get; set; }
-    public virtual DbSet<CompanyEntity> Companies { get; set; }
-    public virtual DbSet<AddressEntity> Addresses { get; set; } 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ConfigureIUniqueEntities();
-        modelBuilder.ConfigureAddressEntity();
-        modelBuilder.ConfigureUserEntity();
 
         base.OnModelCreating(modelBuilder);
     }

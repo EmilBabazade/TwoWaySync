@@ -1,14 +1,6 @@
-﻿using Domain.User;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data.Entities;
-public class UserEntity : IUnique, IUser
+﻿namespace Domain.User;
+public interface IUser
 {
-    public int RowId { get; set; }
     public int Id { get; set; }
     public string Name { get; set; }
     public string Username { get; set; }
