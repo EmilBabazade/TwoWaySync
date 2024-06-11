@@ -3,9 +3,6 @@ using Data.Entities;
 using Domain.User;
 using Microsoft.EntityFrameworkCore;
 
-// TODO: interface
-// TODO: unit tests
-
 namespace Data.Repos;
 public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
 {
@@ -63,17 +60,22 @@ public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
     }
     public async Task BulkUpsertAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
     {
-        // TODO: Do it in batches of n so the entity tracking doesnt get too big
-        var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
-        // insert
-        var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList();
-        _dataContext.AddRange(_mapper.Map<List<UserEntity>>(newUsers));
-        // update
-        foreach (var ue in existingUsers)
+        // process in chunks of n so the entity tracking doesnt get too big
+        var chunks = users.Chunk(1000);
+        foreach (var chunk in chunks)
         {
-            UpdateUserEntity(users.FirstOrDefault(u => u.Id == ue.Id), ue);
+            var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
+            // insert
+            var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList();
+            _dataContext.AddRange(_mapper.Map<List<UserEntity>>(newUsers));
+            // update
+            foreach (var ue in existingUsers)
+            {
+                UpdateUserEntity(users.FirstOrDefault(u => u.Id == ue.Id), ue);
+            }
+            await _dataContext.SaveChangesAsync(cancellationToken);
+            _dataContext.ChangeTracker.Clear();
         }
-        await _dataContext.SaveChangesAsync(cancellationToken);
     }
     private static void UpdateUserEntity(User user, UserEntity userEntity)
     {
