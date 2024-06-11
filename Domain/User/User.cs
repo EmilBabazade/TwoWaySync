@@ -1,6 +1,8 @@
-﻿namespace Domain.User;
+﻿using System.Text;
 
-public class User : IUser
+namespace Domain.User;
+
+public record User : IUser
 {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -17,4 +19,14 @@ public class User : IUser
     public string CompanyName { get; set; }
     public string CompanyCatchPhrase { get; set; }
     public string CompanyBs { get; set; }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        foreach(var prop in typeof(User).GetProperties())
+        {
+            sb.Append(prop.Name + ": " + prop.GetValue(this) + "\n");
+        }
+        return sb.ToString();
+    }
 }

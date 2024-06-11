@@ -18,14 +18,26 @@ public class DataSyncService
         _usersRepo = usersRepo;
     }
 
-    public async Task RemoteToLocalAsync(CancellationToken cancellationToken = default)
+    public async Task SynchronizeLocalToRemoteAsync(CancellationToken cancellationToken = default)
     {
-        var remoteUsers = await _userApiHttpClient.GetUsers(cancellationToken);
+        var remoteUsers = await _userApiHttpClient.GetUsersAsync(cancellationToken);
         await _usersRepo.BulkUpsert(remoteUsers, cancellationToken);
     }
 
-    public async Task LocalToRemoteAsync()
+    public async Task SynchronizeRemoteToLocalAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var localUsers = await _usersRepo.GetAllAsync(cancellationToken);
+        foreach(var localUser in localUsers)
+        {
+            var remoteUser = await _userApiHttpClient.GetUserAsync(localUser.Id, cancellationToken);
+            if(remoteUser == null)
+            {
+                _userApiHttpClient.AddUserAsync(localUser);
+            } 
+            else if(remoteUser != localUser)
+            {
+                _userApiHttpClient.UpdateUserAsync(localUser, cancellationToken);
+            }
+        }
     }
 }

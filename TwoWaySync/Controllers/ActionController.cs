@@ -25,7 +25,7 @@ public class ActionController : ControllerBase
     [Route("GetAllFromRemote")]
     public async Task<ActionResult<ICollection<User>>> GetAllFromRemote(CancellationToken cancellationToken = default)
     {
-        return Ok(await _userApiHttpClient.GetUsers(cancellationToken));
+        return Ok(await _userApiHttpClient.GetUsersAsync(cancellationToken));
     }
 
     [HttpGet]
@@ -85,10 +85,18 @@ public class ActionController : ControllerBase
         await _usersRepo.UpsertUserAsync(user, cancellationToken);
 
     [HttpGet]
-    [Route("SynchronizeRemoteToLocal")]
-    public async Task<ActionResult> RemoteToLocal(CancellationToken cancellationToken = default)
+    [Route("SynchronizeLocalToRemote")]
+    public async Task<ActionResult> SynchronizeLocalToRemote(CancellationToken cancellationToken = default)
     {
-        await _dataSyncService.RemoteToLocalAsync(cancellationToken);
+        await _dataSyncService.SynchronizeLocalToRemoteAsync(cancellationToken);
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("SynchronizeRemoteToLocal")]
+    public async Task<ActionResult> SynchronizeRemoteToLocal(CancellationToken cancellationToken = default)
+    {
+        await _dataSyncService.SynchronizeRemoteToLocalAsync(cancellationToken);
         return Ok();
     }
 }
