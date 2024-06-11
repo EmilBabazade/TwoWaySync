@@ -9,11 +9,11 @@ namespace TwoWaySync.Controllers;
 [ApiController]
 public class ActionController : ControllerBase
 {
-    private readonly UsersRepo _usersRepo;
+    private readonly IUsersRepo _usersRepo;
     private readonly UserApiHttpClient _userApiHttpClient;
     private readonly DataSyncService _dataSyncService;
 
-    public ActionController(UsersRepo usersRepo, UserApiHttpClient userApiHttpClient, DataSyncService dataSyncService)
+    public ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHttpClient, DataSyncService dataSyncService)
     {
         _usersRepo = usersRepo;
         _userApiHttpClient = userApiHttpClient;

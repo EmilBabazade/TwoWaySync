@@ -10,9 +10,9 @@ namespace Services.DataSync;
 public class DataSyncService
 {
     private readonly UserApiHttpClient _userApiHttpClient;
-    private readonly UsersRepo _usersRepo;
+    private readonly IUsersRepo _usersRepo;
 
-    public DataSyncService(UserApiHttpClient userApiHttpClient, UsersRepo usersRepo)
+    public DataSyncService(UserApiHttpClient userApiHttpClient, IUsersRepo usersRepo)
     {
         _userApiHttpClient = userApiHttpClient;
         _usersRepo = usersRepo;

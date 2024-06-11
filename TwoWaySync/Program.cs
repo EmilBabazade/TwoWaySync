@@ -17,8 +17,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<UserApiHttpClient>();
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite("Data Source = Database.db"));
+builder.Services.AddScoped<IUsersRepo, UsersRepo>();
 // TODO: interface
-builder.Services.AddScoped<UsersRepo>();
 builder.Services.AddScoped<DataSyncService>();
 builder.Services.AddAutoMapper(cfg =>
 {

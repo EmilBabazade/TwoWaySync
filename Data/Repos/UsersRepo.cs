@@ -7,16 +7,10 @@ using Microsoft.EntityFrameworkCore;
 // TODO: unit tests
 
 namespace Data.Repos;
-public class UsersRepo
+public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
 {
-    private readonly DataContext _dataContext;
-    private readonly IMapper _mapper;
-
-    public UsersRepo(DataContext dataContext, IMapper mapper)
-    {
-        _dataContext = dataContext;
-        _mapper = mapper;
-    }
+    private readonly DataContext _dataContext = dataContext;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -69,10 +63,10 @@ public class UsersRepo
     {
         var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
         // insert
-        var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList(); 
+        var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList();
         _dataContext.AddRange(_mapper.Map<List<UserEntity>>(newUsers));
         // update
-        foreach(var ue in existingUsers)
+        foreach (var ue in existingUsers)
         {
             UpdateUserEntity(users.FirstOrDefault(u => u.Id == ue.Id), ue);
         }
