@@ -45,6 +45,8 @@ public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
     public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
     {
         var userEntity = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken) ?? throw new ApplicationException();
+        if (userEntity == null)
+            throw new ApplicationException("User does not exist");
         UpdateUserEntity(user, userEntity);
         await _dataContext.SaveChangesAsync(cancellationToken);
         return _mapper.Map<User>(userEntity);
