@@ -1,11 +1,14 @@
 using Data;
 using Data.MappingProfiles;
 using Data.Repos;
+using Domain.User;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Services.DataSync;
 using Services.MappingProfiles;
 using Services.UsersApi;
+using TwoWaySync.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<UserEntityMappingProfile>();
     cfg.AddProfile<RequestUserMappingProfile>();
 });
+builder.Services.AddScoped<IValidator<User>, UserValidator>();
 
 var app = builder.Build();
 

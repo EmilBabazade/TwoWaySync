@@ -1,5 +1,6 @@
 ﻿using Data.Repos;
 using Domain.User;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Services.DataSync;
 using Services.UsersApi;
@@ -7,11 +8,12 @@ using Services.UsersApi;
 namespace TwoWaySync.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHttpClient, IDataSyncService dataSyncService) : ControllerBase
+public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHttpClient, IDataSyncService dataSyncService, IValidator<User> validator) : ControllerBase
 {
     private readonly IUsersRepo _usersRepo = usersRepo;
     private readonly UserApiHttpClient _userApiHttpClient = userApiHttpClient;
     private readonly IDataSyncService _dataSyncService = dataSyncService;
+    private readonly IValidator<User> _validator = validator;
 
     // for debugging
     [HttpGet]
@@ -42,6 +44,7 @@ public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHtt
     {
         try
         {
+            await ValidateAsync(user, cancellationToken);
             return await _usersRepo.CreateAsync(user, cancellationToken);
         }
         catch(ApplicationException ex)
@@ -64,6 +67,7 @@ public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHtt
     {
         try
         {
+            await ValidateAsync(user, cancellationToken);
             return await _usersRepo.UpdateUserAsync(user, cancellationToken);
         }
         catch(ApplicationException)
@@ -74,8 +78,11 @@ public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHtt
 
     [HttpPut]
     [Route("Upsert")]
-    public async Task<User> Upsert([FromBody] User user, CancellationToken cancellationToken = default) =>
-        await _usersRepo.UpsertUserAsync(user, cancellationToken);
+    public async Task<User> Upsert([FromBody] User user, CancellationToken cancellationToken = default)
+    {
+        await ValidateAsync(user, cancellationToken);
+        return await _usersRepo.UpsertUserAsync(user, cancellationToken);
+    }
 
     [HttpGet]
     [Route("SynchronizeLocalToRemote")]
@@ -92,4 +99,7 @@ public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHtt
         await _dataSyncService.SynchronizeRemoteToLocalAsync(cancellationToken);
         return Ok();
     }
+
+    protected async Task ValidateAsync(User user, CancellationToken cancellationToken = default) =>
+            await _validator.ValidateAndThrowAsync(user, cancellationToken);
 }
