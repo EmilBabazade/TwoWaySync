@@ -17,60 +17,21 @@ public class UserApiHttpClient
         _httpClient.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/users");
     }
 
-    public async Task<ICollection<User>?> GetUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<RequestUser>?> GetUsersAsync(CancellationToken cancellationToken = default) =>
+        await _httpClient.GetFromJsonAsync<IEnumerable<RequestUser>?>(string.Empty, cancellationToken);
+
+    public async Task<RequestUser?> GetUserAsync(int id, CancellationToken cancellationToken = default) => 
+        await _httpClient.GetFromJsonAsync<RequestUser?>($"{_httpClient.BaseAddress}/{id}", cancellationToken); // this should be ok with just passing the subpath but it expects full url
+
+    public async Task AddUserAsync(RequestUser user, CancellationToken cancellationToken = default)
     {
-        var responseUsers = await _httpClient.GetFromJsonAsync<IEnumerable<ResponseUser>?>(string.Empty, cancellationToken);
-        // TODO: null checks
-        return responseUsers.Select(ResponseToUser).ToList();
+        Console.WriteLine("---------------------------------------------\n");
+        Console.WriteLine($"Added new user:\n{user}\n");
     }
 
-    public async Task<User?> GetUserAsync(int id, CancellationToken cancellationToken = default)
+    public async Task UpdateUserAsync(RequestUser user, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            // What is the point of having a _httpClient.BaseAddress if the url isn't gonna be automatically appended to it ???
-            var res = await _httpClient.GetFromJsonAsync<ResponseUser?>($"{_httpClient.BaseAddress}/{id}", cancellationToken);
-            return ResponseToUser(res);
-        }
-        catch(HttpRequestException ex) when (ex.Message.Contains("404"))
-        {
-            return null;
-        }
-    }
-
-    public async Task<User> AddUserAsync(User user, CancellationToken cancellationToken = default)
-    {
-        Console.WriteLine($"Added new user:\n{user}");
-        return user;
-    }
-
-    public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
-    {
-        var remoteUser = await GetUserAsync(user.Id, cancellationToken);
-        Console.WriteLine($"Updated user\n{remoteUser}\nto\n{user}");
-        return user;
-    }
-
-    // TODO: PUT IN AUTOMAPPER
-    private static User ResponseToUser(ResponseUser u)
-    {
-        return new User
-        {
-            ApartmentSuite = u.Address.Suite,
-            City = u.Address.City,
-            CompanyBs = u.Company.Bs,
-            CompanyCatchPhrase = u.Company.CatchPhrase,
-            CompanyName = u.Company.Name,
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Latitude = u.Address.Geo.Lat,
-            Longitude = u.Address.Geo.Lng,
-            Phone = u.Phone,
-            StreetAddress = u.Address.Street,
-            Username = u.Username,
-            Website = u.Website,
-            ZipCode = u.Address.Zipcode
-        };
+        Console.WriteLine("---------------------------------------------\n");
+        Console.WriteLine($"Updated user with id {user.Id}\nto\n{user}\n");
     }
 }

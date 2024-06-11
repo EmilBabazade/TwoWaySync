@@ -3,6 +3,7 @@ using Data;
 using Data.Entities;
 using Data.Repos;
 using Domain.User;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataTests;
@@ -10,7 +11,7 @@ namespace DataTests;
 public class UserRepoTests
 {
     private DataContext _dbContext;
-    private IUsersRepo _repo;
+    private IUsersRepo _testRepo;
     private IMapper _mapper;
 
     [SetUp]
@@ -25,7 +26,7 @@ public class UserRepoTests
                                     .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // seperate db for each test
                                     .Options;
         _dbContext = new DataContext(testContextOptions);
-        _repo = new UsersRepo(_dbContext, _mapper);
+        _testRepo = new UsersRepo(_dbContext, _mapper);
     }
 
     [TearDown]
@@ -172,12 +173,12 @@ public class UserRepoTests
                 ZipCode = "abc2"
             }
         };
-        await _repo.BulkUpsert(upsertUsers);
+        await _testRepo.BulkUpsert(upsertUsers);
 
         var upsertedUserEntities = await _dbContext.Users.ToListAsync();
         var upsertedUsers = _mapper.Map<List<User>>(upsertedUserEntities);
-        Assert.That(upsertedUsers, Has.Count.EqualTo(upsertUsers.Count()));
-        Assert.That(upsertedUsers, Is.EqualTo(upsertUsers));
+        upsertedUsers.Should().HaveCount(upsertUsers.Count());
+        upsertedUsers.Should().BeEquivalentTo(upsertUsers);
     }
 
     [Test]
@@ -201,12 +202,12 @@ public class UserRepoTests
             Website = "abc",
             ZipCode = "abc"
         };
-        await _repo.CreateAsync(newUser);
+        await _testRepo.CreateAsync(newUser);
 
         var createdUserEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == newUser.Id);
         var createdUser = _mapper.Map<User>(createdUserEntity);
-        Assert.That(createdUser, Is.Not.Null);
-        Assert.That(createdUser, Is.EqualTo(newUser));
+        createdUser.Should().NotBeNull();
+        createdUser.Should().BeEquivalentTo(newUser);
     }
 
     [Test]
@@ -234,7 +235,8 @@ public class UserRepoTests
         await _dbContext.SaveChangesAsync();
 
         var userDuplicate = _mapper.Map<User>(newUser);
-        Assert.That(async () => await _repo.CreateAsync(userDuplicate), Throws.InstanceOf<ApplicationException>());
+        var func = async () => await _testRepo.CreateAsync(userDuplicate);
+        func.Should().ThrowAsync<ApplicationException>();
     }
 
     [Test]
@@ -261,9 +263,9 @@ public class UserRepoTests
         _dbContext.Add(userEntity);
         await _dbContext.SaveChangesAsync();
 
-        await _repo.DeleteUserAsync(userEntity.Id);
+        await _testRepo.DeleteUserAsync(userEntity.Id);
         var userInDbEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userEntity.Id);
-        Assert.That(userInDbEntity, Is.Null);
+        userInDbEntity.Should().BeNull();
     }
 
     [Test]
@@ -330,12 +332,9 @@ public class UserRepoTests
         await _dbContext.SaveChangesAsync();
         var usersInDb = _mapper.Map<ICollection<User>>(userEntities);
 
-        var users = await _repo.GetAllAsync();
+        var users = await _testRepo.GetAllAsync();
         Assert.That(users, Has.Count.EqualTo(usersInDb.Count));
-        foreach(var userInDb in usersInDb)
-        {
-            Assert.That(userInDb, Is.EqualTo(users.First(u => u.Id == userInDb.Id)));
-        }
+        usersInDb.Should().BeEquivalentTo(users);
     }
 
     [Test]
@@ -362,16 +361,17 @@ public class UserRepoTests
         _dbContext.Add(newUser);
         await _dbContext.SaveChangesAsync();
 
-        var createdUser = await _repo.GetByIdAsync(newUser.Id);
+        var createdUser = await _testRepo.GetByIdAsync(newUser.Id);
         Assert.That(createdUser, Is.Not.Null);
-        Assert.That(createdUser, Is.EqualTo(_mapper.Map<User>(newUser)));
+        createdUser.Should().NotBeNull();
+        createdUser.Should().BeEquivalentTo(_mapper.Map<User>(newUser));
     }
 
     [Test]
     public async Task TestGetByIdReturnsNullWhenNotExists()
     {
-        var createdUser = await _repo.GetByIdAsync(22);
-        Assert.That(createdUser, Is.Null);
+        var createdUser = await _testRepo.GetByIdAsync(22);
+        createdUser.Should().BeNull();
     }
 
     [Test]
@@ -416,12 +416,12 @@ public class UserRepoTests
             Website = "abc",
             ZipCode = "abc"
         };
-        await _repo.UpdateUserAsync(updateUser);
+        await _testRepo.UpdateUserAsync(updateUser);
 
         var updatedUserEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == newUser.Id);
         var updatedUser = _mapper.Map<User>(updatedUserEntity);
-        Assert.That(updatedUser, Is.Not.Null);
-        Assert.That(updatedUser, Is.EqualTo(updateUser));
+        updatedUser.Should().NotBeNull();
+        updatedUser.Should().BeEquivalentTo(updatedUser);
     }
 
     [Test]
@@ -446,7 +446,8 @@ public class UserRepoTests
             ZipCode = "abc"
         };
 
-        Assert.That(async () => await _repo.UpdateUserAsync(updateUser), Throws.InstanceOf<ApplicationException>());
+        var func = async () => await _testRepo.UpdateUserAsync(updateUser);
+        func.Should().ThrowAsync<ApplicationException>();
     }
 
     [Test]
@@ -491,12 +492,13 @@ public class UserRepoTests
             Website = "abc",
             ZipCode = "abc"
         };
-        await _repo.UpsertUserAsync(updateUser);
+        await _testRepo.UpsertUserAsync(updateUser);
 
         var updatedUserEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == newUser.Id);
         var updatedUser = _mapper.Map<User>(updatedUserEntity);
         Assert.That(updatedUser, Is.Not.Null);
-        Assert.That(updatedUser, Is.EqualTo(_mapper.Map<User>(updateUser)));
+        updatedUser.Should().NotBeNull();
+        updatedUser.Should().BeEquivalentTo(_mapper.Map<User>(updateUser));
     }
 
     [Test]
@@ -521,11 +523,11 @@ public class UserRepoTests
             ZipCode = "abc"
         };
 
-        await _repo.UpsertUserAsync(updateUser);
+        await _testRepo.UpsertUserAsync(updateUser);
 
         var userInDbEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == updateUser.Id);
         var userInDb = _mapper.Map<User>(userInDbEntity);
-        Assert.That(userInDb, Is.Not.Null);
-        Assert.That(userInDb, Is.EqualTo(updateUser));
+        userInDb.Should().NotBeNull();
+        userInDb.Should().BeEquivalentTo(updateUser);
     }
 }

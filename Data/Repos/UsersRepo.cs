@@ -61,7 +61,7 @@ public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
         await _dataContext.SaveChangesAsync(cancellationToken);
         return _mapper.Map<User>(userEntity);
     }
-    public async Task BulkUpsert(ICollection<User> users, CancellationToken cancellationToken = default)
+    public async Task BulkUpsert(IEnumerable<User> users, CancellationToken cancellationToken = default)
     {
         var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
         // insert
