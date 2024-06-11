@@ -21,7 +21,7 @@ public class DataSyncService(UserApiHttpClient userApiHttpClient, IUsersRepo use
     {
         var response = await _userApiHttpClient.GetUsersAsync(cancellationToken);
         var remoteUsers = _mapper.Map<IEnumerable<User>>(response);
-        await _usersRepo.BulkUpsert(remoteUsers, cancellationToken);
+        await _usersRepo.BulkUpsertAsync(remoteUsers, cancellationToken);
     }
 
     public async Task SynchronizeRemoteToLocalAsync(CancellationToken cancellationToken = default)

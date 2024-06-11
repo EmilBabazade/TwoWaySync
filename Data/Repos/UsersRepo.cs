@@ -61,8 +61,9 @@ public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
         await _dataContext.SaveChangesAsync(cancellationToken);
         return _mapper.Map<User>(userEntity);
     }
-    public async Task BulkUpsert(IEnumerable<User> users, CancellationToken cancellationToken = default)
+    public async Task BulkUpsertAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
     {
+        // TODO: Do it in batches of n so the entity tracking doesnt get too big
         var existingUsers = await _dataContext.Users.Where(ue => users.Select(u => u.Id).Contains(ue.Id)).ToListAsync(cancellationToken);
         // insert
         var newUsers = users.Where(u => !existingUsers.Exists(ue => ue.Id == u.Id)).ToList();
