@@ -1,20 +1,18 @@
 ﻿using Domain.User;
+using Microsoft.Extensions.Configuration;
 using Services.UsersApi.ResponseModel;
 using System.Net.Http.Json;
-
-// TODO: unit tests
 
 namespace Services.UsersApi;
 public class UserApiHttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public UserApiHttpClient(HttpClient httpClient)
+    public UserApiHttpClient(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
 
-        // TODO: move to appsettings.json
-        _httpClient.BaseAddress = new Uri("https://jsonplaceholder.typicode.com/users");
+        _httpClient.BaseAddress = new Uri(configuration["UserApiURL"]);
     }
 
     public async Task<IEnumerable<RequestUser>?> GetUsersAsync(CancellationToken cancellationToken = default) =>

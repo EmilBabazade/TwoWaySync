@@ -1,4 +1,5 @@
-﻿using Data.Repos;
+﻿using AutoMapper;
+using Data.Repos;
 using Domain.User;
 using Services.UsersApi;
 using Services.UsersApi.ResponseModel;
@@ -10,21 +11,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.DataSync;
-public class DataSyncService
+public class DataSyncService(UserApiHttpClient userApiHttpClient, IUsersRepo usersRepo, IMapper mapper) : IDataSyncService
 {
-    private readonly UserApiHttpClient _userApiHttpClient;
-    private readonly IUsersRepo _usersRepo;
-
-    public DataSyncService(UserApiHttpClient userApiHttpClient, IUsersRepo usersRepo)
-    {
-        _userApiHttpClient = userApiHttpClient;
-        _usersRepo = usersRepo;
-    }
+    private readonly UserApiHttpClient _userApiHttpClient = userApiHttpClient;
+    private readonly IUsersRepo _usersRepo = usersRepo;
+    private readonly IMapper _mapper = mapper;
 
     public async Task SynchronizeLocalToRemoteAsync(CancellationToken cancellationToken = default)
     {
         var response = await _userApiHttpClient.GetUsersAsync(cancellationToken);
-        var remoteUsers = ResponseToUser(response);
+        var remoteUsers = _mapper.Map<IEnumerable<User>>(response);
         await _usersRepo.BulkUpsert(remoteUsers, cancellationToken);
     }
 
@@ -32,97 +28,21 @@ public class DataSyncService
     {
         var localUsers = await _usersRepo.GetAllAsync(cancellationToken);
         var apiUsers = await _userApiHttpClient.GetUsersAsync(cancellationToken);
-        foreach(var localUser in localUsers)
+        foreach (var localUser in localUsers)
         {
             var apiUser = apiUsers.FirstOrDefault(u => u.Id == localUser.Id);
             if (apiUser == null)
             {
-                _userApiHttpClient.AddUserAsync(UserToRequestUser(localUser));
+                _userApiHttpClient.AddUserAsync(_mapper.Map<RequestUser>(localUser));
             }
             else
             {
-                var remoteUser = ResponseToUser(apiUser);
+                var remoteUser = _mapper.Map<User>(apiUser);
                 if (remoteUser != localUser)
                 {
-                    _userApiHttpClient.UpdateUserAsync(UserToRequestUser(localUser), cancellationToken);
+                    _userApiHttpClient.UpdateUserAsync(_mapper.Map<RequestUser>(localUser), cancellationToken);
                 }
             }
         }
-    }
-
-    // TODO: PUT IN AUTOMAPPER
-    private static RequestUser UserToRequestUser(User u)
-    {
-        return new RequestUser
-        {
-            Address = new Address
-            {
-                Suite = u.ApartmentSuite,
-                City = u.City,
-                Street = u.StreetAddress,
-                Zipcode = u.ZipCode,
-                Geo = new Geo
-                {
-                    Lat = u.Latitude,
-                    Lng = u.Longitude
-                }
-            },
-            Company = new Company
-            {
-                Bs = u.CompanyBs,
-                CatchPhrase = u.CompanyCatchPhrase,
-                Name = u.CompanyName
-            },
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Phone = u.Phone,
-            Username = u.Username,
-            Website = u.Website
-        };
-    }
-
-    private static User ResponseToUser(RequestUser u)
-    {
-        return new User
-        {
-            ApartmentSuite = u.Address.Suite,
-            City = u.Address.City,
-            CompanyBs = u.Company.Bs,
-            CompanyCatchPhrase = u.Company.CatchPhrase,
-            CompanyName = u.Company.Name,
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Latitude = u.Address.Geo.Lat,
-            Longitude = u.Address.Geo.Lng,
-            Phone = u.Phone,
-            StreetAddress = u.Address.Street,
-            Username = u.Username,
-            Website = u.Website,
-            ZipCode = u.Address.Zipcode
-        };
-    }
-
-    private static IEnumerable<User> ResponseToUser(IEnumerable<RequestUser> users)
-    {
-        return users.Select(u => new User
-        {
-            ApartmentSuite = u.Address.Suite,
-            City = u.Address.City,
-            CompanyBs = u.Company.Bs,
-            CompanyCatchPhrase = u.Company.CatchPhrase,
-            CompanyName = u.Company.Name,
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Latitude = u.Address.Geo.Lat,
-            Longitude = u.Address.Geo.Lng,
-            Phone = u.Phone,
-            StreetAddress = u.Address.Street,
-            Username = u.Username,
-            Website = u.Website,
-            ZipCode = u.Address.Zipcode
-        });
     }
 }

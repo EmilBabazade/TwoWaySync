@@ -7,23 +7,16 @@ using Services.UsersApi;
 namespace TwoWaySync.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class ActionController : ControllerBase
+public class ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHttpClient, IDataSyncService dataSyncService) : ControllerBase
 {
-    private readonly IUsersRepo _usersRepo;
-    private readonly UserApiHttpClient _userApiHttpClient;
-    private readonly DataSyncService _dataSyncService;
-
-    public ActionController(IUsersRepo usersRepo, UserApiHttpClient userApiHttpClient, DataSyncService dataSyncService)
-    {
-        _usersRepo = usersRepo;
-        _userApiHttpClient = userApiHttpClient;
-        _dataSyncService = dataSyncService;
-    }
+    private readonly IUsersRepo _usersRepo = usersRepo;
+    private readonly UserApiHttpClient _userApiHttpClient = userApiHttpClient;
+    private readonly IDataSyncService _dataSyncService = dataSyncService;
 
     // for debugging
     [HttpGet]
     [Route("GetAllFromRemote")]
-    public async Task<ActionResult<ICollection<User>>> GetAllFromRemote(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<User>>> GetAllFromRemote(CancellationToken cancellationToken = default)
     {
         return Ok(await _userApiHttpClient.GetUsersAsync(cancellationToken));
     }
@@ -40,7 +33,7 @@ public class ActionController : ControllerBase
 
     [HttpGet]
     [Route("GetAll")]
-    public async Task<ICollection<User>> GetAllAsync(CancellationToken cancellationToken = default) =>
+    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default) =>
         await _usersRepo.GetAllAsync(cancellationToken);
 
     [HttpPost]

@@ -330,10 +330,10 @@ public class UserRepoTests
         };
         _dbContext.AddRange(userEntities);
         await _dbContext.SaveChangesAsync();
-        var usersInDb = _mapper.Map<ICollection<User>>(userEntities);
+        var usersInDb = _mapper.Map<IEnumerable<User>>(userEntities);
 
         var users = await _testRepo.GetAllAsync();
-        Assert.That(users, Has.Count.EqualTo(usersInDb.Count));
+        users.Should().HaveCount(usersInDb.Count());
         usersInDb.Should().BeEquivalentTo(users);
     }
 
@@ -362,7 +362,6 @@ public class UserRepoTests
         await _dbContext.SaveChangesAsync();
 
         var createdUser = await _testRepo.GetByIdAsync(newUser.Id);
-        Assert.That(createdUser, Is.Not.Null);
         createdUser.Should().NotBeNull();
         createdUser.Should().BeEquivalentTo(_mapper.Map<User>(newUser));
     }
@@ -496,7 +495,6 @@ public class UserRepoTests
 
         var updatedUserEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == newUser.Id);
         var updatedUser = _mapper.Map<User>(updatedUserEntity);
-        Assert.That(updatedUser, Is.Not.Null);
         updatedUser.Should().NotBeNull();
         updatedUser.Should().BeEquivalentTo(_mapper.Map<User>(updateUser));
     }

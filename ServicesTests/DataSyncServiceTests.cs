@@ -1,13 +1,16 @@
 using AutoMapper;
 using Data;
 using Data.Entities;
+using Data.MappingProfiles;
 using Data.Repos;
 using Domain.User;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
 using Services.DataSync;
+using Services.MappingProfiles;
 using Services.UsersApi;
 using Services.UsersApi.ResponseModel;
 using System.Collections.Generic;
@@ -22,7 +25,7 @@ public class DataSyncServiceTests
     private IUsersRepo _repo;
     private IMapper _mapper;
     private UserApiHttpClient _userApiHttpClient;
-    private DataSyncService _testService;
+    private IDataSyncService _testService;
 
     const string RESPONSE_CONTENT = @"
         [
@@ -101,7 +104,8 @@ public class DataSyncServiceTests
     {
         var testMapperConfig = new MapperConfiguration(cfg =>
         {
-            cfg.CreateMap<User, UserEntity>().ReverseMap();
+            cfg.AddProfile<UserEntityMappingProfile>();
+            cfg.AddProfile<RequestUserMappingProfile>();
         });
         _mapper = testMapperConfig.CreateMapper();
         var testContextOptions = new DbContextOptionsBuilder<DataContext>()
@@ -117,25 +121,20 @@ public class DataSyncServiceTests
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(RESPONSE_CONTENT)
             });
-        _userApiHttpClient = new UserApiHttpClient(new HttpClient(mockMsgHandler.Object));
-        _testService = new DataSyncService(_userApiHttpClient, _repo);
+        var inMemorySettings = new Dictionary<string, string> {
+                { "UserApiURL", "https://emilbabazade.com" } 
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+        _userApiHttpClient = new UserApiHttpClient(new HttpClient(mockMsgHandler.Object), configuration);
+        _testService = new DataSyncService(_userApiHttpClient, _repo, _mapper);
     }
 
     [TearDown]
     public void Cleanup()
     {
         _dbContext.Dispose();
-    }
-
-
-    [Test]
-    public void Test1()
-    {
-        using var sw = new StringWriter();
-        Console.SetOut(sw);
-        Console.WriteLine("abc");
-        var output = sw.ToString().Replace("\r\n", string.Empty);
-        Assert.That(output, Is.EqualTo("abc"));
     }
 
     [Test]
@@ -145,7 +144,7 @@ public class DataSyncServiceTests
         var usersInDb = await _dbContext.Users.ToListAsync();
         var actual = _mapper.Map<IEnumerable<User>>(usersInDb);
         var requestUsers = JsonSerializer.Deserialize<IEnumerable<RequestUser>>(RESPONSE_CONTENT, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        var expected = ResponseToUser(requestUsers);
+        var expected = _mapper.Map<IEnumerable<User>>(requestUsers);
         actual.Should().BeEquivalentTo(expected);
     }
 
@@ -251,82 +250,6 @@ Phone: 1234567891
 Website: abc1
 Company: Services.UsersApi.ResponseModel.Company
 ";
-        Assert.That(actual, Is.EqualTo(actual));
-    }
-
-    // TODO: PUT IN AUTOMAPPER
-    private static RequestUser UserToRequestUser(User u)
-    {
-        return new RequestUser
-        {
-            Address = new Address
-            {
-                Suite = u.ApartmentSuite,
-                City = u.City,
-                Street = u.StreetAddress,
-                Zipcode = u.ZipCode,
-                Geo = new Geo
-                {
-                    Lat = u.Latitude,
-                    Lng = u.Longitude
-                }
-            },
-            Company = new Company
-            {
-                Bs = u.CompanyBs,
-                CatchPhrase = u.CompanyCatchPhrase,
-                Name = u.CompanyName
-            },
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Phone = u.Phone,
-            Username = u.Username,
-            Website = u.Website
-        };
-    }
-
-    private static User ResponseToUser(RequestUser u)
-    {
-        return new User
-        {
-            ApartmentSuite = u.Address.Suite,
-            City = u.Address.City,
-            CompanyBs = u.Company.Bs,
-            CompanyCatchPhrase = u.Company.CatchPhrase,
-            CompanyName = u.Company.Name,
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Latitude = u.Address.Geo.Lat,
-            Longitude = u.Address.Geo.Lng,
-            Phone = u.Phone,
-            StreetAddress = u.Address.Street,
-            Username = u.Username,
-            Website = u.Website,
-            ZipCode = u.Address.Zipcode
-        };
-    }
-
-    private static IEnumerable<User> ResponseToUser(IEnumerable<RequestUser> users)
-    {
-        return users.Select(u => new User
-        {
-            ApartmentSuite = u.Address.Suite,
-            City = u.Address.City,
-            CompanyBs = u.Company.Bs,
-            CompanyCatchPhrase = u.Company.CatchPhrase,
-            CompanyName = u.Company.Name,
-            Name = u.Name,
-            Email = u.Email,
-            Id = u.Id,
-            Latitude = u.Address.Geo.Lat,
-            Longitude = u.Address.Geo.Lng,
-            Phone = u.Phone,
-            StreetAddress = u.Address.Street,
-            Username = u.Username,
-            Website = u.Website,
-            ZipCode = u.Address.Zipcode
-        });
+        actual.Should().BeEquivalentTo(actual);
     }
 }

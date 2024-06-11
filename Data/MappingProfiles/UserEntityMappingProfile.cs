@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Data.MappingProfiles;
-public class UserMappingProfile : Profile
+public class UserEntityMappingProfile : Profile
 {
-    public UserMappingProfile()
+    public UserEntityMappingProfile()
     {
         CreateMap<UserEntity, User>().ReverseMap();
     }

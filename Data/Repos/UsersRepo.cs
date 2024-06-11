@@ -18,10 +18,10 @@ public class UsersRepo(DataContext dataContext, IMapper mapper) : IUsersRepo
         return _mapper.Map<User>(user);
     }
 
-    public async Task<ICollection<User>> GetAllAsync(CancellationToken cancellation = default)
+    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellation = default)
     {
         var users = await _dataContext.Users.OrderBy(u => u.Id).ToListAsync(cancellation);
-        return _mapper.Map<ICollection<User>>(users);
+        return _mapper.Map<IEnumerable<User>>(users);
     }
     public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
     {
