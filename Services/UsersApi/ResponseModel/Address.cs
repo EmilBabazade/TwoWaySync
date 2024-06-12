@@ -1,6 +1,9 @@
-﻿namespace Services.UsersApi.ResponseModel;
+﻿using Common;
 
-public class Address
+namespace Services.UsersApi.ResponseModel;
+
+// this should be poco classes but i already wrote the pretty print logic :)
+public class Address : PrettyPropToString
 {
     public string Street { get; set; }
     public string Suite { get; set; }

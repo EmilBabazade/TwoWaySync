@@ -1,8 +1,11 @@
-﻿using System.Text;
+﻿using Common;
+using System.Text;
 
 namespace Services.UsersApi.ResponseModel;
 
-public class RequestUser
+// this should be poco classes but i already wrote the pretty print logic :)
+
+public class RequestUser : PrettyPropToString
 {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -12,14 +15,4 @@ public class RequestUser
     public string Phone { get; set; }
     public string Website { get; set; }
     public Company Company { get; set; }
-
-    public override string ToString()
-    {
-        var sb = new StringBuilder();
-        foreach (var prop in typeof(RequestUser).GetProperties())
-        {
-            sb.Append(prop.Name + ": " + prop.GetValue(this) + "\n");
-        }
-        return sb.ToString();
-    }
 }
